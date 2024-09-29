@@ -1,0 +1,21 @@
+<h1>Reverse Proxy</h1>
+<p>Running healthchecks behin a reverse proxy can result in a CSRF error.
+While django has a <code>CSRF_TRUSTED_ORIGINS</code> option, which can resolve this issue, this is not needed with the correct config.
+The following list some example configs for your reverse proxy as well as additional options which might be set in oder for django to understand these.</p>
+<p>In general it is important to pass the host and scheme to healthchecks via the reverse porxy.</p>
+<h2>Nginx</h2>
+<p>The following is a minimal example for nginx.
+Some use <code>$http_host</code> instead of <code>$host</code>, but that can result in a security issue due to <a href="https://github.com/yandex/gixy/blob/6f68624a7540ee51316651bda656894dc14c9a3e/docs/en/plugins/hostspoofing.md">host spoofing</a>.</p>
+<div class="highlight"><pre><span></span><code>location / {
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_pass http://localhost:8000;
+}
+</code></pre></div>
+
+<p>To prevent django from still failing, the following line has to be added to <code>local_settings.py</code></p>
+<div class="highlight"><pre><span></span><code><span class="n">SECURE_PROXY_SSL_HEADER</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;HTTP_X_FORWARDED_PROTO&quot;</span><span class="p">,</span> <span class="s2">&quot;https&quot;</span><span class="p">)</span>
+</code></pre></div>
+
+<h2>HAProxy</h2>
+<h2>Caddy</h2>
